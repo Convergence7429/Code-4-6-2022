@@ -1,0 +1,98 @@
+@Override
+  public void autonomousPeriodic(){
+    shooter.dumpShot();
+    shooter.shooterIdle(0.20);
+    System.out.println("timer: " + autonomousTimer.get());
+    System.out.println("yaw: " + gyro.getYaw());
+
+    if(autonomousTimer.get() > 1.0){
+      intake.indexByColor();
+    }
+
+    switch(autoStage){
+
+      case 0 : {
+        autoStage = 1;
+        drive.stopMotors();
+        drive.resetDriveTrainEncoders();
+        shooter.shootInit();
+        break;
+      }
+
+
+      case 1 : {
+        shooter.dumpShot = true;
+        if(autonomousTimer.get() > 0.8){
+          autoStage = 2;
+          shooter.dumpShot = false;
+          drive.stopMotors();
+          drive.resetDriveTrainEncoders();
+        }
+        break;
+      }
+
+      case 2 : {
+        drive.driveTrainByInches(70.0, 0);
+        if(autonomousTimer.get() > 3.0){
+          autoStage = 3;
+          drive.stopMotors();
+          drive.resetDriveTrainEncoders();
+          gyro.zeroYaw();
+        }
+        break;
+      }
+
+      case 3 : {
+        if(gyro.getYaw() > -35.0){
+          drive.mecanumDrive.driveCartesian(0.0, 0.0, -0.15);
+        } else {
+          drive.maxMotorSpeedEncoders = 0.85;
+          intake.intakeDown();
+          intake.intakeMotor.set(-0.65);
+          autoStage = 4;
+          drive.stopMotors();
+          drive.resetDriveTrainEncoders();
+        }
+        break;
+      }
+
+      case 4 : {
+        drive.driveTrainByInches(150.0, 0);
+        if(autonomousTimer.get() > 7.5){
+          gyro.zeroYaw();
+          autoStage = 5;
+          drive.stopMotors();
+          drive.resetDriveTrainEncoders();
+        }
+        break;
+      }
+
+      case 5 : {
+        if(gyro.getYaw() < 4.0){
+          drive.mecanumDrive.driveCartesian(0.0, 0.0, 0.15);
+        } else {
+          autoStage = 6;
+          drive.stopMotors();
+          drive.resetDriveTrainEncoders();
+        }
+        break;
+      }
+
+      case 6 : {
+        drive.driveTrainByInches(200.0, 1);
+        if(autonomousTimer.get() > 11.0){
+          autoStage = 7;
+          drive.stopMotors();
+          drive.resetDriveTrainEncoders();
+        }
+        break;
+      }
+
+      case 7 : {
+        if(shooter.centerRobotOnTarget()){
+          shooter.dumpShot = true;
+        }
+        break;
+      }
+    }
+  }

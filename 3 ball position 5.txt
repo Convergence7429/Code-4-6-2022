@@ -1,0 +1,138 @@
+@Override
+  public void autonomousPeriodic() {
+    System.out.println("yaw: " + gyro.getYaw());
+    System.out.println("Autonomous Timer: " + autonomousTimer.get());
+    shooter.dumpShot();
+    shooter.shooterIdle(0.2);
+
+    if(autonomousTimer.get() > 1.0){
+      intake.indexByColor();
+    }
+
+    switch (autoStage) {
+
+      case 0: {
+        autoStage = 1;
+        drive.stopMotors();
+        drive.resetDriveTrainEncoders();
+        intake.intakeDown();
+        shooter.shootInit();
+        break;
+      }
+
+      case 1: {
+        shooter.dumpShot = true;
+        if (autonomousTimer.get() > 1.0) {
+          autoStage = 2;
+          drive.stopMotors();
+          drive.resetDriveTrainEncoders();
+          shooter.dumpShot = false;
+          intake.intakeMotor.set(-0.65);
+        }
+        break;
+      }
+
+      case 2: {
+        drive.driveTrainByInches(35.0, 0);
+        if (autonomousTimer.get() > 2.5) {
+          autoStage = 3;
+          drive.stopMotors();
+          drive.resetDriveTrainEncoders();
+          gyro.zeroYaw();
+          turningTimer.reset();
+        }
+        break;
+      }
+
+      case 3: {
+        if(gyro.getYaw() < 65.0){
+          drive.mecanumDrive.driveCartesian(0.0, 0.0, 0.3);
+        } 
+        // else if(gyro.getYaw() < 85.0){
+        //   drive.mecanumDrive.driveCartesian(0.0, 0.0, 0.08);
+        // } 
+        else {
+          autoStage = 4;
+          drive.stopMotors();
+          drive.resetDriveTrainEncoders();
+        }
+        break;
+      }
+
+      case 4: {
+        System.out.println("case 4");
+        drive.driveTrainByInches(85.0, 0);
+        if(autonomousTimer.get() > 5.0){
+          autoStage = 5;
+          drive.stopMotors();
+          drive.resetDriveTrainEncoders();
+          gyro.zeroYaw();
+        }
+        // if (autonomousTimer.get() > 8.0) {
+        //   autoStage = 5;
+        //   drive.stopMotors();
+        //   drive.resetDriveTrainEncoders();
+        // }
+        break;
+      }
+
+      case 5 : {
+        if(gyro.getYaw() > -20.0){
+          drive.mecanumDrive.driveCartesian(0.0, 0.0, -0.3);
+        } else {
+          autoStage = 6;
+          drive.stopMotors();
+          drive.resetDriveTrainEncoders();
+        }
+        break;
+      }
+
+      case 6 : {
+        drive.driveTrainByInches(65.0, 1);
+        if(autonomousTimer.get() > 7.0){
+          autoStage = 7;
+          drive.stopMotors();
+          drive.resetDriveTrainEncoders();
+        }
+        break;
+      }
+
+      case 7 : {
+        if(shooter.centerRobotOnTarget()){
+          shooter.dumpShot = true;
+        }
+        break;
+      }
+
+      // case 5 : {
+      // drive.driveTrainByInches(13.0, 4);
+      // if(autonomousTimer.get() > 9.0){
+      // autoStage = 6;
+      // drive.stopMotors();
+      // drive.resetDriveTrainEncoders();
+      // }
+      // break;
+      // }
+
+      // case 6 : {
+      // drive.driveTrainByInches(77.0, 1);
+      // if(autonomousTimer.get() > 11.0){
+      // autoStage = 7;
+      // drive.stopMotors();
+      // drive.resetDriveTrainEncoders();
+      // shooter.shootInit();
+      // }
+      // break;
+      // }
+
+      // case 7 : {
+      // if(shooter.centerRobotOnTarget()){
+      // shooter.dumpShot = true;
+      // } else {
+      // shooter.dumpShot = false;
+      // }
+      // break;
+      // }
+    }
+
+  }

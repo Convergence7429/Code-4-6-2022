@@ -1,0 +1,64 @@
+@Override
+  public void autonomousPeriodic(){
+    shooter.dumpShot();
+    shooter.shooterIdle(0.20);
+    System.out.println("timer: " + autonomousTimer.get());
+    System.out.println("yaw: " + gyro.getYaw());
+
+    if(autonomousTimer.get() > 1.0){
+      intake.indexByColor();
+    }
+
+    switch(autoStage){
+
+      case 0 : {
+        autoStage = 1;
+        drive.stopMotors();
+        drive.resetDriveTrainEncoders();
+        intake.intakeDown();
+        shooter.shootInit();
+        break;
+      }
+
+
+      case 1 : {
+        shooter.dumpShot = true;
+        if(autonomousTimer.get() > 1.0){
+          autoStage = 2;
+          shooter.dumpShot = false;
+          drive.stopMotors();
+          drive.resetDriveTrainEncoders();
+          intake.intakeMotor.set(-0.65);
+        }
+        break;
+      }
+
+      case 2 : {
+        drive.driveTrainByInches(62.0, 0);
+        if(autonomousTimer.get() > 4.0){
+          autoStage = 4;
+          drive.stopMotors();
+          drive.resetDriveTrainEncoders();
+        }
+        break;
+      }
+
+      case 4 : {
+        drive.driveTrainByInches(50.0, 1);
+        if(autonomousTimer.get() > 7.5){
+          autoStage = 5;
+          drive.stopMotors();
+          drive.resetDriveTrainEncoders();
+        }
+        break;
+      }
+
+      case 5 : {
+        if(shooter.centerRobotOnTarget()){
+          shooter.dumpShot = true;
+        }
+        break;
+      }
+    }
+
+  }
